@@ -1,11 +1,12 @@
-// Piston API is a service for code execution
+// Code execution service. The original public Piston API became whitelist-only
+// in 2026, so the app now uses Judge0 CE by default.
 
-const PISTON_API = "https://emkc.org/api/v2/piston";
+const JUDGE0_API = import.meta.env.VITE_JUDGE0_API_URL || "https://ce.judge0.com";
 
-const LANGUAGE_VERSIONS = {
-  javascript: { language: "javascript", version: "18.15.0" },
-  python: { language: "python", version: "3.10.0" },
-  java: { language: "java", version: "15.0.2" },
+const LANGUAGE_IDS = {
+  javascript: 93, // JavaScript (Node.js 18.15.0)
+  python: 92, // Python (3.11.2)
+  java: 91, // Java (JDK 17.0.6)
 };
 
 /**
@@ -15,49 +16,45 @@ const LANGUAGE_VERSIONS = {
  */
 export async function executeCode(language, code) {
   try {
-    const languageConfig = LANGUAGE_VERSIONS[language];
+    const languageId = LANGUAGE_IDS[language];
 
-    if (!languageConfig) {
+    if (!languageId) {
       return {
         success: false,
         error: `Unsupported language: ${language}`,
       };
     }
 
-    const response = await fetch(`${PISTON_API}/execute`, {
+    const response = await fetch(`${JUDGE0_API}/submissions?base64_encoded=false&wait=true`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        language: languageConfig.language,
-        version: languageConfig.version,
-        files: [
-          {
-            name: `main.${getFileExtension(language)}`,
-            content: code,
-          },
-        ],
+        language_id: languageId,
+        source_code: code,
       }),
     });
+
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       return {
         success: false,
-        error: `HTTP error! status: ${response.status}`,
+        error: data.message || `HTTP error! status: ${response.status}`,
       };
     }
 
-    const data = await response.json();
+    const output = data.stdout || "";
+    const stderr = data.stderr || "";
+    const compileOutput = data.compile_output || "";
+    const message = data.message || "";
 
-    const output = data.run.output || "";
-    const stderr = data.run.stderr || "";
-
-    if (stderr) {
+    if (stderr || compileOutput || message || data.status?.id !== 3) {
       return {
         success: false,
         output: output,
-        error: stderr,
+        error: stderr || compileOutput || message || data.status?.description || "Code execution failed",
       };
     }
 
@@ -71,14 +68,4 @@ export async function executeCode(language, code) {
       error: `Failed to execute code: ${error.message}`,
     };
   }
-}
-
-function getFileExtension(language) {
-  const extensions = {
-    javascript: "js",
-    python: "py",
-    java: "java",
-  };
-
-  return extensions[language] || "txt";
 }

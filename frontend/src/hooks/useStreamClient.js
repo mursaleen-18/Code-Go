@@ -4,6 +4,14 @@ import toast from "react-hot-toast";
 import { initializeStreamClient, disconnectStreamClient } from "../lib/stream";
 import { sessionApi } from "../api/sessions";
 
+const withTimeout = (promise, message, timeoutMs = 15000) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), timeoutMs);
+    }),
+  ]);
+
 function useStreamClient(session, loadingSession, isHost, isParticipant) {
   const [streamClient, setStreamClient] = useState(null);
   const [call, setCall] = useState(null);
@@ -16,11 +24,28 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
     let chatClientInstance = null;
 
     const initCall = async () => {
-      if (!session?.callId) return;
-      if (!isHost && !isParticipant) return;
-      if (session.status === "completed") return;
+      setStreamClient(null);
+      setCall(null);
+      setChatClient(null);
+      setChannel(null);
+
+      if (loadingSession || !session?.callId) {
+        setIsInitializingCall(true);
+        return;
+      }
+
+      if (!isHost && !isParticipant) {
+        setIsInitializingCall(false);
+        return;
+      }
+
+      if (session.status === "completed") {
+        setIsInitializingCall(false);
+        return;
+      }
 
       try {
+        setIsInitializingCall(true);
         const { token, userId, userName, userImage } = await sessionApi.getStreamToken();
 
         const client = await initializeStreamClient(
@@ -35,34 +60,37 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
         setStreamClient(client);
 
         videoCall = client.call("default", session.callId);
-        await videoCall.join({ create: true });
+        await withTimeout(videoCall.join(), "Timed out while joining the video call");
         setCall(videoCall);
+        setIsInitializingCall(false);
 
         const apiKey = import.meta.env.VITE_STREAM_API_KEY;
         chatClientInstance = StreamChat.getInstance(apiKey);
 
-        await chatClientInstance.connectUser(
-          {
-            id: userId,
-            name: userName,
-            image: userImage,
-          },
-          token
+        await withTimeout(
+          chatClientInstance.connectUser(
+            {
+              id: userId,
+              name: userName,
+              image: userImage,
+            },
+            token
+          ),
+          "Timed out while connecting to session chat"
         );
         setChatClient(chatClientInstance);
 
         const chatChannel = chatClientInstance.channel("messaging", session.callId);
-        await chatChannel.watch();
+        await withTimeout(chatChannel.watch(), "Timed out while loading session chat");
         setChannel(chatChannel);
       } catch (error) {
-        toast.error("Failed to join video call");
-        console.error("Error init call", error);
-      } finally {
         setIsInitializingCall(false);
+        toast.error(error.message || "Failed to join video call");
+        console.error("Error init call", error);
       }
     };
 
-    if (session && !loadingSession) initCall();
+    initCall();
 
     // cleanup - performance reasons
     return () => {
