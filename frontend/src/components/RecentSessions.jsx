@@ -4,11 +4,11 @@ import { formatDistanceToNow } from "date-fns";
 
 function RecentSessions({ sessions, isLoading }) {
   return (
-    <div className="card bg-base-100 border-2 border-accent/20 hover:border-accent/30 mt-8">
+    <div className="card bg-base-100 codego-panel mt-8">
       <div className="card-body">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gradient-to-br from-accent to-secondary rounded-xl">
-            <Clock className="w-5 h-5 text-white" />
+          <div className="p-2 bg-accent/15 rounded-lg">
+            <Clock className="w-5 h-5 text-accent" />
           </div>
           <h2 className="text-2xl font-black">Your Past Sessions</h2>
         </div>
@@ -22,10 +22,10 @@ function RecentSessions({ sessions, isLoading }) {
             sessions.map((session) => (
               <div
                 key={session._id}
-                className={`card relative ${
+                className={`card relative dynamic-card ${
                   session.status === "active"
                     ? "bg-success/10 border-success/30 hover:border-success/60"
-                    : "bg-base-200 border-base-300 hover:border-primary/30"
+                    : "bg-base-200 border-primary/10 hover:border-primary/30"
                 }`}
               >
                 {session.status === "active" && (
@@ -40,13 +40,9 @@ function RecentSessions({ sessions, isLoading }) {
                 <div className="card-body p-5">
                   <div className="flex items-start gap-3 mb-4">
                     <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        session.status === "active"
-                          ? "bg-gradient-to-br from-success to-success/70"
-                          : "bg-gradient-to-br from-primary to-secondary"
-                      }`}
+                      className="brand-mark w-12 h-12 rounded-lg flex items-center justify-center"
                     >
-                      <Code2 className="w-6 h-6 text-white" />
+                      <Code2 className="w-6 h-6 text-secondary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-base mb-1 truncate">{session.problem}</h3>
@@ -87,7 +83,7 @@ function RecentSessions({ sessions, isLoading }) {
             ))
           ) : (
             <div className="col-span-full text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-accent/20 to-secondary/20 rounded-3xl flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-4 bg-accent/15 rounded-lg flex items-center justify-center">
                 <Trophy className="w-10 h-10 text-accent/50" />
               </div>
               <p className="text-lg font-semibold opacity-70 mb-1">No sessions yet</p>

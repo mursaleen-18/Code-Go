@@ -3,14 +3,14 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
   return (
     <div className="h-full overflow-y-auto bg-base-200">
       {/* HEADER SECTION */}
-      <div className="p-6 bg-base-100 border-b border-base-300">
+      <div className="p-6 bg-neutral text-neutral-content border-b border-base-300">
         <div className="flex items-start justify-between mb-3">
-          <h1 className="text-3xl font-bold text-base-content">{problem.title}</h1>
+          <h1 className="text-3xl font-bold">{problem.title}</h1>
           <span className={`badge ${getDifficultyBadgeClass(problem.difficulty)}`}>
             {problem.difficulty}
           </span>
         </div>
-        <p className="text-base-content/60">{problem.category}</p>
+        <p className="text-neutral-content/60">{problem.category}</p>
 
         {/* Problem selector */}
         <div className="mt-4">
@@ -30,7 +30,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
 
       <div className="p-6 space-y-6">
         {/* PROBLEM DESC */}
-        <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-300">
+        <div className="bg-base-100 rounded-lg p-5 border border-primary/10">
           <h2 className="text-xl font-bold text-base-content">Description</h2>
 
           <div className="space-y-3 text-base leading-relaxed">
@@ -44,7 +44,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
         </div>
 
         {/* EXAMPLES SECTION */}
-        <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-300">
+        <div className="bg-base-100 rounded-lg p-5 border border-primary/10">
           <h2 className="text-xl font-bold mb-4 text-base-content">Examples</h2>
           <div className="space-y-4">
             {problem.examples.map((example, idx) => (
@@ -76,7 +76,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
         </div>
 
         {/* CONSTRAINTS */}
-        <div className="bg-base-100 rounded-xl shadow-sm p-5 border border-base-300">
+        <div className="bg-base-100 rounded-lg p-5 border border-primary/10">
           <h2 className="text-xl font-bold mb-4 text-base-content">Constraints</h2>
           <ul className="space-y-2 text-base-content/90">
             {problem.constraints.map((constraint, idx) => (

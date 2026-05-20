@@ -14,6 +14,7 @@ export const streamClient = new StreamClient(apiKey, apiSecret); // will be used
 
 export const upsertStreamUser = async (userData) => {
   try {
+    await streamClient.upsertUsers([userData]);
     await chatClient.upsertUser(userData);
     console.log("Stream user upserted successfully:", userData);
   } catch (error) {

@@ -24,7 +24,7 @@ function SessionPage() {
 
   const { data: sessionData, isLoading: loadingSession, refetch } = useSessionById(id);
 
-  const joinSessionMutation = useJoinSession();
+  const { mutate: joinSession } = useJoinSession();
   const endSessionMutation = useEndSession();
 
   const session = sessionData?.session;
@@ -51,10 +51,8 @@ function SessionPage() {
     if (!session || !user || loadingSession) return;
     if (isHost || isParticipant) return;
 
-    joinSessionMutation.mutate(id, { onSuccess: refetch });
-
-    // remove the joinSessionMutation, refetch from dependencies to avoid infinite loop
-  }, [session, user, loadingSession, isHost, isParticipant, id]);
+    joinSession(id, { onSuccess: refetch });
+  }, [session, user, loadingSession, isHost, isParticipant, id, joinSession, refetch]);
 
   // redirect the "participant" when session ends
   useEffect(() => {
