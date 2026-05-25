@@ -1,7 +1,14 @@
 import axios from "axios";
 
+const normalizeApiUrl = (url) => {
+  if (!url) return "/api";
+
+  const trimmedUrl = url.replace(/\/+$/, "");
+  return trimmedUrl.endsWith("/api") ? trimmedUrl : `${trimmedUrl}/api`;
+};
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: normalizeApiUrl(import.meta.env.VITE_API_URL),
   withCredentials: true, // by adding this field browser will send the cookies to server automatically, on every single req
 });
 

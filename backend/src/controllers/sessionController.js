@@ -1,7 +1,9 @@
-import { chatClient, streamClient } from "../lib/stream.js";
+import { chatClient, streamClient, upsertStreamUser } from "../lib/stream.js";
 import Session from "../models/Session.js";
 
 export async function createSession(req, res) {
+  let session;
+
   try {
     const { problem, difficulty } = req.body;
     const userId = req.user._id;
@@ -15,7 +17,13 @@ export async function createSession(req, res) {
     const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // create session in db
-    const session = await Session.create({ problem, difficulty, host: userId, callId });
+    session = await Session.create({ problem, difficulty, host: userId, callId });
+
+    await upsertStreamUser({
+      id: clerkId,
+      name: req.user.name,
+      image: req.user.profileImage,
+    });
 
     // create stream video call
     await streamClient.video.call("default", callId).getOrCreate({
@@ -37,8 +45,14 @@ export async function createSession(req, res) {
 
     res.status(201).json({ session });
   } catch (error) {
-    console.log("Error in createSession controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    if (session?._id) {
+      await Session.findByIdAndDelete(session._id).catch((cleanupError) => {
+        console.error("Error cleaning up failed session:", cleanupError.message);
+      });
+    }
+
+    console.error("Error in createSession controller:", error);
+    res.status(500).json({ message: "Unable to create video room. Please try again." });
   }
 }
 
@@ -116,6 +130,12 @@ export async function joinSession(req, res) {
 
     session.participant = userId;
     await session.save();
+
+    await upsertStreamUser({
+      id: clerkId,
+      name: req.user.name,
+      image: req.user.profileImage,
+    });
 
     const channel = chatClient.channel("messaging", session.callId);
     await channel.addMembers([clerkId]);

@@ -44,6 +44,8 @@ CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 
 CLIENT_URL=http://localhost:5173
+# For deployed frontends, use your Vercel URL. Multiple origins can be comma-separated.
+# CLIENT_URL=https://your-app.vercel.app,https://your-preview.vercel.app
 ```
 
 ### Frontend (`/frontend`)
@@ -52,6 +54,8 @@ CLIENT_URL=http://localhost:5173
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 
 VITE_API_URL=http://localhost:3000/api
+# In production this can be either the Render root URL or the /api URL.
+# VITE_API_URL=https://your-backend.onrender.com
 
 VITE_STREAM_API_KEY=your_stream_api_key
 ```
