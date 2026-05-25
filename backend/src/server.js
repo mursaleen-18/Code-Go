@@ -12,6 +12,10 @@ import sessionRoutes from "./routes/sessionRoute.js";
 
 const app = express();
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ msg: "api is up and running" });
+});
+
 const allowedOrigins = (ENV.CLIENT_URL || "")
   .split(",")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
@@ -48,10 +52,6 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 
 app.get("/", (req, res) => {
-  res.status(200).json({ msg: "api is up and running" });
-});
-
-app.get("/health", (req, res) => {
   res.status(200).json({ msg: "api is up and running" });
 });
 
